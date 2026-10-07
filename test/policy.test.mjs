@@ -44,6 +44,24 @@ test("an override phrase quoted inside a task is not a command", () => {
   assert.equal(out.reason, "jev");
 });
 
+test("an override can never reach paid fable unless the config opts in", () => {
+  const out = decide({ ...base, prompt: "use fable", jev: sure("opus"), allowOverride: true });
+  assert.equal(out.tier, "sonnet");
+  assert.match(out.reason, /override-fable-disabled/);
+  assert.equal(out.changed, false);
+});
+
+test("a fable override applies once the config opts in", () => {
+  process.env.JEV_ALLOW_FABLE_OVERRIDE = "1";
+  try {
+    const out = decide({ ...base, prompt: "use fable", jev: sure("sonnet"), allowOverride: true });
+    assert.equal(out.tier, "fable");
+    assert.equal(out.reason, "override");
+  } finally {
+    delete process.env.JEV_ALLOW_FABLE_OVERRIDE;
+  }
+});
+
 test("detectOverride only fires when the whole prompt is the command", () => {
   assert.equal(detectOverride("switch to opus"), "opus");
   assert.equal(detectOverride("use luna"), "haiku");

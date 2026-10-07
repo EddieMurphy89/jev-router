@@ -45,6 +45,14 @@ export const tierOf = (model) =>
 export const availableTiers = () =>
   TIER_NAMES.filter((n) => n !== "fable" || process.env.JEV_ALLOW_FABLE === "1");
 
+/**
+ * Even a trusted whole-prompt override cannot reach fable without this second explicit
+ * opt-in on top of JEV_ALLOW_FABLE: fable bills extra usage credits, and a typed command
+ * can still be dictated by something the user read. Jev's own recommendations are gated by
+ * JEV_ALLOW_FABLE alone, as before.
+ */
+export const fableOverrideAllowed = () => process.env.JEV_ALLOW_FABLE_OVERRIDE === "1";
+
 export const THRESHOLDS = {
   /** Below this Jev confidence we refuse to downgrade and cap upgrades at `uncertainCeiling`. */
   minConfidence: 0.3,

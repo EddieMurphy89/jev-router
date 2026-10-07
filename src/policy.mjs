@@ -1,4 +1,4 @@
-import { TIER_NAMES, THRESHOLDS, OVERRIDE_PATTERNS, rankOf } from "./config.mjs";
+import { TIER_NAMES, THRESHOLDS, OVERRIDE_PATTERNS, fableOverrideAllowed, rankOf } from "./config.mjs";
 
 /** The tier the user named explicitly in the prompt, or null. */
 export function detectOverride(prompt) {
@@ -45,6 +45,11 @@ export function decide({ prompt, jev, current, available, contextTokens = 0, all
   };
 
   const override = allowOverride ? detectOverride(prompt) : null;
+  // Fable bills extra usage credits, so an override phrase can only reach it after a second
+  // explicit opt-in (fableOverrideAllowed); otherwise the command is refused, not rerouted.
+  if (override === "fable" && !fableOverrideAllowed()) {
+    return settle(current, "override-fable-disabled");
+  }
   if (override) return settle(override, "override");
 
   if (!jev || !TIER_NAMES.includes(jev.choice)) return settle(current, "jev-unavailable");
