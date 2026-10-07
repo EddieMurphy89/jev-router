@@ -32,16 +32,19 @@ function clampToAvailable(tier, available) {
  * @param {string} input.current       tier currently active in the session
  * @param {string[]} input.available   tier names the account can run
  * @param {number} input.contextTokens approximate size of the conversation so far
+ * @param {boolean} [input.allowOverride] trust the prompt as a direct user command; without
+ *   this, in-prompt override phrases are ignored, because text the agent read in is
+ *   indistinguishable from text the user typed
  * @returns {{tier: string, reason: string, changed: boolean}}
  */
-export function decide({ prompt, jev, current, available, contextTokens = 0 }) {
+export function decide({ prompt, jev, current, available, contextTokens = 0, allowOverride = false }) {
   const settle = (tier, reason) => {
     const final = clampToAvailable(tier, available) ?? current;
     const why = final === tier ? reason : `${reason}+unavailable`;
     return { tier: final, reason: final === current ? `${why}/no-change` : why, changed: final !== current };
   };
 
-  const override = detectOverride(prompt);
+  const override = allowOverride ? detectOverride(prompt) : null;
   if (override) return settle(override, "override");
 
   if (!jev || !TIER_NAMES.includes(jev.choice)) return settle(current, "jev-unavailable");

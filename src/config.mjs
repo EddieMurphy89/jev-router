@@ -83,16 +83,22 @@ const COMPLEXITY_SCALE = [
 
 export const COMPLEXITY_MAX_SCORE = COMPLEXITY_SCALE.length - 1;
 
-/** Phrases that mean "the human already decided", checked against the raw prompt. */
+/**
+ * Phrases that mean "the human already decided". The phrase must be the whole prompt, not
+ * merely appear in it: the proxy sees the composed API request, where text the user typed is
+ * indistinguishable from text they quoted or the agent read in, so a substring match would
+ * let any document containing "use fable" retier the session. A turn consisting of exactly
+ * the command can only have been entered deliberately.
+ */
 export const OVERRIDE_PATTERNS = TIERS.map((t) => ({
   tier: t.name,
   re: new RegExp(
-    `\\b(?:use|switch to|with|on)\\s+(?:${{
+    `^\\s*(?:use|switch to|with|on)\\s+(?:${{
       haiku: "haiku|fast|luna",
       sonnet: "sonnet|balanced|terra",
       opus: "opus|strong|sol",
       fable: "fable|long|astra",
-    }[t.name]})\\b`,
+    }[t.name]})\\s*$`,
     "i",
   ),
 }));

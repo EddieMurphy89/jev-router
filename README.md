@@ -190,7 +190,8 @@ One Jev call per fresh user turn selects a shared abstract tier:
 
 `src/policy.mjs` then applies these rules:
 
-- explicit requests such as `use opus`, `use luna`, or `use strong` win;
+- a turn that is exactly an explicit request such as `use opus`, `use luna`, or `use strong`
+  wins; the phrase appearing inside a larger prompt does nothing;
 - failure, timeout, or an unrecognised Jev answer keeps the current model;
 - low confidence never downgrades and caps upgrades at the balanced tier;
 - large conversations refuse downgrades that would waste more prompt-cache work than they save;
@@ -252,7 +253,8 @@ injection, and decision display.
 
 ## Limitations
 
-- The user's prompt text is sent to TypeSafe for the routing decision. Nothing else is.
+- The prompt text itself is never sent to TypeSafe: the routing decision is made from bounded
+  structural facts about it (length, lines, code/file markers) plus session metadata.
 - Jev adds latency only to the first request of a turn; tool-loop continuations add none.
 - Claude Code and Codex request formats are not public contracts. Use `JEV_DUMP` to diagnose
   upstream changes.
